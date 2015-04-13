@@ -11,7 +11,8 @@ from xblock.fragment import Fragment
 
 from xblockutils.studio_editable import StudioContainerXBlockMixin, StudioEditableXBlockMixin
 
-DATE_FORMAT = '%Y-%m-%d %H:%M'
+DATE_FORMAT = '%Y/%m/%d %H:%M'
+MAX_TRIES = 5
 
 # '%Y-%m-%dT%H:%M:%S.%f'
 
@@ -22,6 +23,8 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
     """
 
     has_children = True
+    AJAX = False  # if True, children will be loaded by ajax when password is ok instead of reloading the whole page
+
     editable_fields = ['start_date', 'end_date', 'password']
 
     start_date = String(default="", scope=Scope.settings,
@@ -34,6 +37,18 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
     password = String(default="", scope=Scope.settings,
             display_name=u"Mot de passe",
             help="Password")
+
+
+    nb_tries = Integer(
+        default=0, scope=Scope.user_info,
+        help="An Integer indicating how many times the user tried authenticating"
+    )
+    user_allowed = Boolean(
+        default=False, scope=Scope.user_info,
+        help="Set to True if user has once been allowed to see childre blocks"
+    )
+
+
 
     #warning_message = String(default="You can't se this because...", scope=Scope.settings,
     #        display_name=u"",
@@ -59,17 +74,92 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         data = pkg_resources.resource_string(__name__, path)
         return data.decode("utf8")
 
+
     def _render_template(self, ressource, **kwargs):
         template = Template(self.resource_string(ressource))
-        context = dict({'start_date': self.start_date, 'end_date': self.end_date, 'password': self.password},
+        context = dict({'start_date': self.start_date,
+                'end_date': self.end_date,
+                'password': self.password,
+                'nb_tries': self.nb_tries,
+                },
                 **kwargs)
         html = template.render(Context(context))
         return html
 
+
+    @XBlock.json_handler
+    def reset_user_state(self, data, prefix=''):
+        """Reset user state for testing purpose."""
+        # TODO: restrain to staff
+        self.user_allowed = False
+        self.nb_tries = 0
+        return {'result': 'ok'}
+
+    @XBlock.json_handler
+    def check_password(self, data, prefix=''):
+        email = data.get('email')
+        password = data.get('password')
+
+        self.nb_tries += 1
+
+        #if self.runtime.get_real_user is not None:
+        #    email=self.runtime.get_real_user(self.runtime.anonymous_student_id).email
+
+        if password == self.password:
+            self.user_allowed = True
+            if self.AJAX:  # This do not work, as it do not correctly initialyze quizz Javascript
+                fragment = Fragment(self._render_template('static/html/3-available.html'))
+                child_frags = self.runtime.render_children(block=self, view_name='student_view', context=None)
+                html = self._render_template('static/html/sequence.html', children=child_frags)
+                fragment.add_content(html)
+                result = {
+                    'result': True,
+                    'message': u"Go !",
+                    'i4x_uri': self.location.to_deprecated_string(),
+                    'html': fragment.body_html(),
+                    }
+            else:
+                result = {  # Javascript will reload the page
+                    'result': True,
+                    'message': u"The page will reload",
+                    'reload': True
+                    }
+
+        else:
+            result = {
+                'result': False,
+                'message': u"Mot de passe invalide"
+                }
+            if (self.nb_tries > MAX_TRIES):
+                result['message'] = u"Too many tries"
+
+        return result
+
+
+
+    @XBlock.json_handler
+    def get_time_left(self, data, prefix=''):
+        """Return time left to access children."""
+
+        end_date = datetime.datetime.strptime(self.end_date, DATE_FORMAT)
+        time_left = end_date - datetime.datetime.now()
+
+        return {
+            'time_left': '{:02} heures {:02} minutes {:02} secondes'.format(time_left.seconds // 3600,
+                    time_left.seconds % 3600 // 60,
+                    time_left.seconds % 60)
+            }
+
+
+
     def student_view(self, context=None):
-        # studio view
+
         #import ipdb; ipdb.set_trace()
-        if self._is_studio():
+
+        #self.user_allowed = False
+        #self.nb_tries = 0
+#        import ipdb; ipdb.set_trace()
+        if self._is_studio():  # studio view
             fragment = Fragment(self._render_template('static/html/studio.html'))
             fragment.add_css(self.resource_string('static/css/password-container-studio.css'))
             child_frags = self.render_children(context, fragment, can_reorder=False, can_add=True)
@@ -81,10 +171,19 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
                 end_date = datetime.datetime.strptime(self.end_date, DATE_FORMAT)
                 now = datetime.datetime.now()
                 if now > start_date and now < end_date:
-                    # display password inputbox
-                    fragment = Fragment(self._render_template('static/html/2-enter-password.html'))
-                    #child_frags = self.render_children(context, frag, can_reorder=False, can_add=True)
-                    init_js = 'CheckPassword'
+                    if self.user_allowed:
+                        fragment = Fragment(self._render_template('static/html/3-available.html'))
+                        child_frags = self.runtime.render_children(block=self, view_name='student_view', context=context)
+                        html = self._render_template('static/html/sequence.html', children=child_frags)
+                        fragment.add_content(html)
+                        fragment.add_frags_resources(child_frags)
+                        fragment.initialize_js('PasswordContainerXBlock', 'Run')
+
+                    else:
+                        fragment = Fragment(self._render_template('static/html/2-enter-password.html'))
+                        child_frags = self.runtime.render_children(block=self, view_name='student_view', context=context)
+                        fragment.add_frags_resources(child_frags)
+                        fragment.initialize_js('PasswordContainerXBlock', 'CheckPassword')
 
                 elif now > end_date:
                     fragment = Fragment(self._render_template('static/html/4-not-available-anymore.html'))
@@ -93,8 +192,6 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
 
                 fragment.add_css(self.resource_string('static/css/password-container-lms.css'))
                 fragment.add_javascript(self.resource_string("static/js/src/password_container.js"))
-                if init_js:
-                    fragment.initialize_js(init_js)
 
                 return fragment
 
