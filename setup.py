@@ -23,17 +23,18 @@ def package_data(pkg, roots):
 setup(
     name='password_container-xblock',
     version='0.1',
-    description='password_container XBlock',   # TODO: write a better description.
+    description=u"This Xblock will restrain acces to its children to a time period and an identication process",
     packages=[
         'password_container',
     ],
     install_requires=[
         'XBlock',
+        #'xblockutils'
     ],
     entry_points={
         'xblock.v1': [
             'password_container = password_container:PasswordContainerXBlock',
         ]
     },
-    package_data=package_data("password_container", ["static", "public"]),
+    package_data=package_data('password_container', ['static', 'public']),
 )

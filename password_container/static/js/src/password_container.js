@@ -3,9 +3,10 @@
 var PasswordContainerXBlock = (function(){
     console.log('PasswordContainerXBlock initialization');
 
+    /* common scope */
     var timeout;
     var TIME_LEFT_REFRESH = true;
-    var TIME_LEFT_REFRESH_DELAY = 1 * 1000;
+    var TIME_LEFT_REFRESH_DELAY = 60 * 1000;
 
     /* generic ajax error method */
     var error = function(data) {
@@ -30,6 +31,7 @@ var PasswordContainerXBlock = (function(){
     }
 
 
+    /* will be called when user is asked to identify */
     var CheckPassword = function(runtime, element) {
         console.log('xblock javascript initialization: CheckPassword');
 
@@ -71,6 +73,7 @@ var PasswordContainerXBlock = (function(){
         });
     };
 
+    /* will be called when user is identified and have limited time */
     var Run = function(runtime, element) {
 
         console.log('xblock javascript initialization: Run');
@@ -97,26 +100,25 @@ var PasswordContainerXBlock = (function(){
     };
 
     $(function ($) {
-        /* Here's where you'd do things on page load. */
         console.log('document ready');
 
     });
 
-    /* This is a hack/wrapper which allow us to have shared code between 2 functions called by XBlock initialization */
-    /* functions to export */
-    var x = {
+    /* This wrapper allows us to have shared code and variables between 2 functions called by XBlock initialization */
+    var methods = { /* functions to export */
         'Run': Run,
         'CheckPassword': CheckPassword,
     }
     var wrapper = function(runtime, element, method) {
+        // At xblock initialization we will receive runtime, DOM element and method to call
         console.log('wrapper');
-        console.log(method);
 
+        // store urls in common scope
         checkPasswordUrl = runtime.handlerUrl(element, 'check_password');
         getTimeLeftUrl = runtime.handlerUrl(element, 'get_time_left');
         resetUserState = runtime.handlerUrl(element, 'reset_user_state');
 
         this[method](runtime, element);
-    }.bind(x);
+    }.bind(methods);
     return wrapper;
 })();

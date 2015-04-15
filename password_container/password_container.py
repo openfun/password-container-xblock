@@ -19,7 +19,7 @@ MAX_TRIES = 5
 
 class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMixin, XBlock):
     """
-    TO-DO: document what your XBlock does.
+    This Xblock will restrain access to its children to a time period and an identication process
     """
 
     has_children = True
@@ -38,21 +38,14 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
             display_name=u"Mot de passe",
             help="Password")
 
-
     nb_tries = Integer(
         default=0, scope=Scope.user_info,
         help="An Integer indicating how many times the user tried authenticating"
     )
     user_allowed = Boolean(
         default=False, scope=Scope.user_info,
-        help="Set to True if user has once been allowed to see childre blocks"
+        help="Set to True if user has once been allowed to see children blocks"
     )
-
-
-
-    #warning_message = String(default="You can't se this because...", scope=Scope.settings,
-    #        display_name=u"",
-    #        help="Message to display ")
 
 
     def _is_studio(self):
@@ -95,6 +88,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         self.nb_tries = 0
         return {'result': 'ok'}
 
+
     @XBlock.json_handler
     def check_password(self, data, prefix=''):
         email = data.get('email')
@@ -105,7 +99,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         #if self.runtime.get_real_user is not None:
         #    email=self.runtime.get_real_user(self.runtime.anonymous_student_id).email
 
-        if password == self.password:
+        if password == self.password:  # A strong identification process is still to imagine
             self.user_allowed = True
             if self.AJAX:  # This do not work, as it do not correctly initialyze quizz Javascript
                 fragment = Fragment(self._render_template('static/html/3-available.html'))
@@ -136,7 +130,6 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         return result
 
 
-
     @XBlock.json_handler
     def get_time_left(self, data, prefix=''):
         """Return time left to access children."""
@@ -151,21 +144,15 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
             }
 
 
-
     def student_view(self, context=None):
 
-        #import ipdb; ipdb.set_trace()
-
-        #self.user_allowed = False
-        #self.nb_tries = 0
-#        import ipdb; ipdb.set_trace()
         if self._is_studio():  # studio view
             fragment = Fragment(self._render_template('static/html/studio.html'))
             fragment.add_css(self.resource_string('static/css/password-container-studio.css'))
             child_frags = self.render_children(context, fragment, can_reorder=False, can_add=True)
             return fragment
-        # student view
-        else:
+
+        else:  # student view
             if self.start_date and self.end_date:
                 start_date = datetime.datetime.strptime(self.start_date, DATE_FORMAT)
                 end_date = datetime.datetime.strptime(self.end_date, DATE_FORMAT)
