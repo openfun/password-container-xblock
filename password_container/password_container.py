@@ -13,6 +13,7 @@ from xblockutils.studio_editable import StudioContainerXBlockMixin, StudioEditab
 
 DATE_FORMAT = '%Y/%m/%d %H:%M'
 MAX_TRIES = 5
+TIME_LEFT_WARNING = 60 * 5
 
 # '%Y-%m-%dT%H:%M:%S.%f'
 
@@ -136,11 +137,24 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
 
         end_date = datetime.datetime.strptime(self.end_date, DATE_FORMAT)
         time_left = end_date - datetime.datetime.now()
+        warning = False
+        days = time_left.days
+        seconds = time_left.seconds % 60
+        minutes = time_left.seconds % 3600 // 60
+        hours = time_left.seconds // 3600
+        total = days * 3600 * 24 + time_left.seconds
+
+        string = u"{days} jours " if days else u""
+        string += u"{hours:02} heures {minutes:02} minutes"
+
+        if total < TIME_LEFT_WARNING:
+            string += u" {seconds:02} secondes"
+            warning = True
 
         return {
-            'time_left': '{:02} heures {:02} minutes {:02} secondes'.format(time_left.seconds // 3600,
-                    time_left.seconds % 3600 // 60,
-                    time_left.seconds % 60)
+            'time_left': string.format(days=days, hours=hours, minutes=minutes, seconds=seconds),
+            'total': total,
+            'warning': warning,
             }
 
 

@@ -23,7 +23,12 @@ var PasswordContainerXBlock = (function(){
             url: getTimeLeftUrl,
             data: JSON.stringify({'dummy': 'dummy'}),
             success: function(data) {
-                $('#time-left').html(data.time_left);
+                $('span#time-left').html(data.time_left);
+                $('div#time-display').toggleClass('warning', data.warning);
+                if (data.total <= 0) {
+                    // time elapsed, reload the page to hide children
+                    document.location.reload(true);
+                }
             },
             error: error
         });
