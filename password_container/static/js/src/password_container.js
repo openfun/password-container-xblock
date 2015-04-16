@@ -8,8 +8,8 @@ var PasswordContainerXBlock = (function(){
     var TIME_LEFT_REFRESH = true;
     var TIME_LEFT_REFRESH_DELAY = 60 * 1000;
 
-    /* generic ajax error method */
-    var error = function(data) {
+    /* generic ajax error handler */
+    var error_handler = function(data) {
         console.log('error');
     }
     var checkPasswordUrl, getTimeLeftUrl, resetUserState;
@@ -30,7 +30,7 @@ var PasswordContainerXBlock = (function(){
                     document.location.reload(true);
                 }
             },
-            error: error
+            error: error_handler
         });
         timeout = window.setTimeout(getTimeLeft, TIME_LEFT_REFRESH_DELAY);
     }
@@ -73,7 +73,7 @@ var PasswordContainerXBlock = (function(){
                         }
                     }
                 },
-                error: error
+                error: error_handler
             });
         });
     };
@@ -98,7 +98,7 @@ var PasswordContainerXBlock = (function(){
                     console.log('user state reseted');
                     document.location.reload(true);
                 },
-                error: error
+                error: error_handler
             });
         });
 

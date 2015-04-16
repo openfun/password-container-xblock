@@ -11,11 +11,15 @@ from xblock.fragment import Fragment
 
 from xblockutils.studio_editable import StudioContainerXBlockMixin, StudioEditableXBlockMixin
 
-DATE_FORMAT = '%Y/%m/%d %H:%M'
+DATE_FORMAT = '%d/%m/%Y/ %H:%M'
 MAX_TRIES = 5
 TIME_LEFT_WARNING = 60 * 5
 
 # '%Y-%m-%dT%H:%M:%S.%f'
+
+# override default DateTime to handle french date format
+class XDateTime(DateTime):
+    DATETIME_FORMAT = DATE_FORMAT
 
 
 class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMixin, XBlock):
@@ -28,10 +32,10 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
 
     editable_fields = ['start_date', 'end_date', 'password']
 
-    start_date = String(default="", scope=Scope.settings,
+    start_date = XDateTime(default="", scope=Scope.settings,
             display_name=u"Debut de la visibilité",
             help="Children visibility start date (%s)" % DATE_FORMAT)
-    end_date = String(default="", scope=Scope.settings,
+    end_date = XDateTime(default="", scope=Scope.settings,
             display_name=u"Fin de la visibilité",
             help="Children visibility end date (%s)" % DATE_FORMAT)
 
