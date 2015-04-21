@@ -4,6 +4,7 @@ import datetime
 import pkg_resources
 
 from django.template import Context, Template
+from django.utils import timezone
 
 from xblock.core import XBlock
 from xblock.fields import Scope, Integer, Boolean, String, DateTime
@@ -139,8 +140,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
     def get_time_left(self, data, prefix=''):
         """Return time left to access children."""
 
-        end_date = datetime.datetime.strptime(self.end_date, DATE_FORMAT)
-        time_left = end_date - datetime.datetime.now()
+        time_left = self.end_date - timezone.now()
         warning = False
         days = time_left.days
         seconds = time_left.seconds % 60
@@ -172,10 +172,9 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
 
         else:  # student view
             if self.start_date and self.end_date:
-                start_date = datetime.datetime.strptime(self.start_date, DATE_FORMAT)
-                end_date = datetime.datetime.strptime(self.end_date, DATE_FORMAT)
-                now = datetime.datetime.now()
-                if now > start_date and now < end_date:
+
+                now = timezone.now()
+                if now > self.start_date and now < self.end_date:
                     if self.user_allowed:
                         fragment = Fragment(self._render_template('static/html/3-available.html'))
                         child_frags = self.runtime.render_children(block=self, view_name='student_view', context=context)
@@ -190,7 +189,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
                         fragment.add_frags_resources(child_frags)
                         fragment.initialize_js('PasswordContainerXBlock', 'CheckPassword')
 
-                elif now > end_date:
+                elif now > self.end_date:
                     fragment = Fragment(self._render_template('static/html/4-not-available-anymore.html'))
                 else:
                     fragment = Fragment(self._render_template('static/html/1-not-yet-available.html'))
