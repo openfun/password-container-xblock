@@ -129,9 +129,11 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         else:
             result = {
                 'result': False,
+                'nb_tries': self.nb_tries,
                 'message': u"Mot de passe invalide"
                 }
             if (self.nb_tries > MAX_TRIES):
+                result['too_much_tries'] = True
                 result['message'] = u"Too many tries"
 
         return result
@@ -185,10 +187,13 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
                         fragment.initialize_js('PasswordContainerXBlock', 'Run')
 
                     else:
-                        fragment = Fragment(self._render_template('static/html/2-enter-password.html'))
-                        child_frags = self.runtime.render_children(block=self, view_name='student_view', context=context)
-                        fragment.add_frags_resources(child_frags)
-                        fragment.initialize_js('PasswordContainerXBlock', 'CheckPassword')
+                        if self.nb_tries < MAX_TRIES:
+                            fragment = Fragment(self._render_template('static/html/2-enter-password.html'))
+                            child_frags = self.runtime.render_children(block=self, view_name='student_view', context=context)
+                            fragment.add_frags_resources(child_frags)
+                            fragment.initialize_js('PasswordContainerXBlock', 'CheckPassword')
+                        else:
+                            fragment = Fragment(self._render_template('static/html/4-not-available-anymore.html'))
 
                 elif now > self.end_date:
                     fragment = Fragment(self._render_template('static/html/4-not-available-anymore.html'))

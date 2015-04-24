@@ -61,15 +61,23 @@ var PasswordContainerXBlock = (function(){
                 url: checkPasswordUrl,
                 data: JSON.stringify(params),
                 success: function(data) {
-                    console.log('success');
-                    if (data.reload) {
-                        document.location.reload(true);
+                    console.log('ajax success');
+                    if (data.result) {
+                        if (data.reload) {
+                            document.location.reload(true);
+                        } else {
+                            console.log(data.i4x_uri)
+                            var $element = $(document).find('[data-id="'+ data.i4x_uri +'"]');
+                            $element.html(data.html);
+                            if (TIME_LEFT_REFRESH) {
+                                timeout = window.setTimeout(getTimeLeft, 500);
+                            }
+                        }
                     } else {
-                        console.log(data.i4x_uri)
-                        var $element = $(document).find('[data-id="'+ data.i4x_uri +'"]');
-                        $element.html(data.html);
-                        if (TIME_LEFT_REFRESH) {
-                            timeout = window.setTimeout(getTimeLeft, 500);
+                        $(element).find('.password-nb-tries').text(data.nb_tries);
+                        $(element).find('.password-error').text(data.message);
+                        if (data.too_much_tries) {
+                            document.location.reload(true);
                         }
                     }
                 },
