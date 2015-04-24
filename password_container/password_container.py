@@ -51,11 +51,11 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
             help="Password")
 
     nb_tries = Integer(
-        default=0, scope=Scope.user_info,
+        default=0, scope=Scope.user_state,
         help="An Integer indicating how many times the user tried authenticating"
     )
     user_allowed = Boolean(
-        default=False, scope=Scope.user_info,
+        default=False, scope=Scope.user_state,
         help="Set to True if user has once been allowed to see children blocks"
     )
 
