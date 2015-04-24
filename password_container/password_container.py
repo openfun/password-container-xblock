@@ -10,7 +10,7 @@ from xblock.core import XBlock
 from xblock.fields import Scope, Integer, Boolean, String, DateTime
 from xblock.fragment import Fragment
 
-from xblockutils.studio_editable import StudioContainerXBlockMixin, StudioEditableXBlockMixin
+from xblockutils2.studio_editable import StudioContainerXBlockMixin, StudioEditableXBlockMixin
 
 DATE_FORMAT = '%d/%m/%Y/ %H:%M'
 MAX_TRIES = 5
