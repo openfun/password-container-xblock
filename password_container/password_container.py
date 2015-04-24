@@ -33,6 +33,12 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
 
     editable_fields = ['start_date', 'end_date', 'password']
 
+    display_name = String(
+        help="Component's name in the studio",
+        default="Time and password limited container",
+        scope=Scope.settings
+    )
+
     start_date = XDateTime(default="", scope=Scope.settings,
             display_name=u"Debut de la visibilité",
             help="Children visibility start date (%s)" % DATE_FORMAT)
