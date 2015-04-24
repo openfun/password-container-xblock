@@ -71,7 +71,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
 
     def get_icon_class(self):
         """Return the CSS class to be used in courseware sequence list."""
-        return 'video'
+        return 'seq_problem'
 
 
     def resource_string(self, path):
@@ -107,7 +107,6 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         password = data.get('password')
 
         self.nb_tries += 1
-
         #if self.runtime.get_real_user is not None:
         #    email=self.runtime.get_real_user(self.runtime.anonymous_student_id).email
 
