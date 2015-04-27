@@ -27,7 +27,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
     has_children = True
     AJAX = False  # if True, children will be loaded by ajax when password is ok instead of reloading the whole page
 
-    editable_fields = ['start_date', 'end_date', 'password']
+    editable_fields = ['start_date', 'end_date', 'duration', 'password']
 
     display_name = String(
         help="Component's name in the studio",
@@ -37,24 +37,30 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
 
     start_date = DateTime(default="", scope=Scope.settings,
             display_name=u"Debut de la visibilité",
-            help="Children visibility start date (%s)" % DATETIME_FORMAT)
+            help=u"Children visibility start date (%s)" % DATETIME_FORMAT)
     end_date = DateTime(default="", scope=Scope.settings,
             display_name=u"Fin de la visibilité",
-            help="Children visibility end date (%s)" % DATETIME_FORMAT)
+            help=u"Children visibility end date (%s)" % DATETIME_FORMAT)
 
     password = String(default="", scope=Scope.settings,
             display_name=u"Mot de passe",
-            help="Password")
+            help=u"Global password, all student will use this password to unlock content")
+    duration = Integer(
+            default=0, scope=Scope.settings,
+            display_name=u"Durée de disponibilité",
+            help=u"Durée de la disponibilité du contenu en minutes")
+
 
     nb_tries = Integer(
         default=0, scope=Scope.user_state,
-        help="An Integer indicating how many times the user tried authenticating"
+        help=u"An Integer indicating how many times the user tried authenticating"
     )
     user_allowed = Boolean(
         default=False, scope=Scope.user_state,
-        help="Set to True if user has once been allowed to see children blocks"
+        help=u"Set to True if user has once been allowed to see children blocks"
     )
-
+    user_started = DateTime(default="", scope=Scope.user_state,
+            help=u"Time user started")
 
     def _is_studio(self):
         studio = False
@@ -82,6 +88,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
                 'end_date': self.end_date,
                 'password': self.password,
                 'nb_tries': self.nb_tries,
+                'duration': self.duration,
                 },
                 **kwargs)
         html = template.render(Context(context))
@@ -94,6 +101,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         # TODO: restrain to staff
         self.user_allowed = False
         self.nb_tries = 0
+        user_started = ""
         return {'result': 'ok'}
 
 
@@ -166,7 +174,6 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
 
 
     def student_view(self, context=None):
-
         if self._is_studio():  # studio view
             fragment = Fragment(self._render_template('static/html/studio.html'))
             fragment.add_css(self.resource_string('static/css/password-container-studio.css'))
