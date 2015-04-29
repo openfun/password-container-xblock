@@ -7,12 +7,19 @@ var PasswordContainerXBlock = (function(){
     var timeout;
     var TIME_LEFT_REFRESH = true;
     var TIME_LEFT_REFRESH_DELAY = 60 * 1000;
+    var TIME_LEFT_WARNING_REFRESH_DELAY = 1 * 1000;
+    var TIME_LEFT_WARNING = 60 * 5;
 
     /* generic ajax error handler */
-    var error_handler = function(data) {
+    var errorHandler = function(data) {
         console.log('error');
     }
     var checkPasswordUrl, getTimeLeftUrl, resetUserState;
+
+    var setTimeout = function(seconds_left) {
+        var delay = seconds_left > TIME_LEFT_WARNING ? TIME_LEFT_REFRESH_DELAY : TIME_LEFT_WARNING_REFRESH_DELAY;
+        timeout = window.setTimeout(getTimeLeft, delay);
+    }
 
     /* retrieve time left to complete quizz */
     var getTimeLeft = function(data) {
@@ -28,16 +35,36 @@ var PasswordContainerXBlock = (function(){
                 if (data.total <= 0) {
                     // time elapsed, reload the page to hide children
                     document.location.reload(true);
+                } else {
+                    setTimeout(data.total);
                 }
             },
-            error: error_handler
+            error: errorHandler
         });
-        timeout = window.setTimeout(getTimeLeft, TIME_LEFT_REFRESH_DELAY);
+
+    }
+
+    var bindResetButton = function(runtime, element) {
+        console.log('DEBUG: binding reset button')
+        $(element).find('.reset-user-state').bind('click', function(event) {
+            console.log('reseting user state');
+            var params = {};
+            $.ajax({
+                type: "POST",
+                url: resetUserState,
+                data: JSON.stringify(params),
+                success: function(data) {
+                    console.log('user state reseted');
+                    document.location.reload(true);
+                },
+                error: errorHandler
+            });
+        });
     }
 
 
     /* will be called when user is asked to identify */
-    var CheckPassword = function(runtime, element) {
+    var checkPassword = function(runtime, element) {
         console.log('xblock javascript initialization: CheckPassword');
 
 
@@ -81,13 +108,14 @@ var PasswordContainerXBlock = (function(){
                         }
                     }
                 },
-                error: error_handler
+                error: errorHandler
             });
         });
     };
 
+
     /* will be called when user is identified and have limited time */
-    var Run = function(runtime, element) {
+    var startExam = function(runtime, element) {
 
         console.log('xblock javascript initialization: Run');
 
@@ -95,21 +123,7 @@ var PasswordContainerXBlock = (function(){
             timeout = window.setTimeout(getTimeLeft, 500);
         }
 
-        $(element).find('.reset-user-state').bind('click', function(event) {
-            console.log('reseting user state');
-            var params = {};
-            $.ajax({
-                type: "POST",
-                url: resetUserState,
-                data: JSON.stringify(params),
-                success: function(data) {
-                    console.log('user state reseted');
-                    document.location.reload(true);
-                },
-                error: error_handler
-            });
-        });
-
+        bindResetButton(runtime, element);
     };
 
     $(function ($) {
@@ -119,14 +133,15 @@ var PasswordContainerXBlock = (function(){
 
     /* This wrapper allows us to have shared code and variables between 2 functions called by XBlock initialization */
     var methods = { /* functions to export */
-        'Run': Run,
-        'CheckPassword': CheckPassword,
+        'startExam': startExam,
+        'checkPassword': checkPassword,
+        'bindResetButton': bindResetButton,
     }
     var wrapper = function(runtime, element, method) {
         // At xblock initialization we will receive runtime, DOM element and method to call
-        console.log('wrapper');
+        console.log('wrapper:' + method);
 
-        // store urls in common scope
+        // store urls in common scope (WARNING urls are not really common. ie: multiple xblock instances on same page)
         checkPasswordUrl = runtime.handlerUrl(element, 'check_password');
         getTimeLeftUrl = runtime.handlerUrl(element, 'get_time_left');
         resetUserState = runtime.handlerUrl(element, 'reset_user_state');

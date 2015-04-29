@@ -1,9 +1,14 @@
 <div id="time-display" class="">
+    <p>
     Vous avez maintenant jusqu'au {{ end_date }} pour répondre à ce quizz
     <br>
     Il vous reste <span id="time-left">---</span> pour valider ce quizz.<br>
+    </p>
+    <p>
+    <!-- TODO: display only if user is course staff. -->
+        <a href="#" class="reset-user-state">Réinitialiser l'état</a>
+    </p>
+
 </div>
-<!-- TODO: display only if user is course staff. -->
-<a href="#" class="reset-user-state">Réinitialiser l'état</a>
 
 <br>
