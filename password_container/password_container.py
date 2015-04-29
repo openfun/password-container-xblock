@@ -37,10 +37,10 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
 
     start_date = DateTime(default="", scope=Scope.settings,
             display_name=u"Debut de la visibilité",
-            help=u"Children visibility start date (%s)" % DATETIME_FORMAT)
+            help=u"Children visibility start date and time (UTC)")
     end_date = DateTime(default="", scope=Scope.settings,
             display_name=u"Fin de la visibilité",
-            help=u"Children visibility end date (%s)" % DATETIME_FORMAT)
+            help=u"Children visibility end date and time (UTC)")
 
     password = String(default="", scope=Scope.settings,
             display_name=u"Mot de passe",

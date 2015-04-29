@@ -1,6 +1,6 @@
+{% load tz %}
 <div id="time-display" class="">
-    <p>
-    Vous avez maintenant jusqu'au {{ end_date }} pour répondre à ce quizz
+    Ce contenu est disponible jusqu'au {% localtime off %}{{ end_date }}{% endlocaltime %} UTC
     <br>
     Il vous reste <span id="time-left">---</span> pour valider ce quizz.<br>
     </p>

@@ -1,6 +1,8 @@
+{% load tz %}
+
 <div class="">
     <p>
     Ce contenu n'est pas encore disponible.<br>
-    Date de disponibilité: {{ start_date }}<br>
+    Date de disponibilité: {% localtime off %}{{ start_date }}{% endlocaltime %} UTC<br>
     </p>
 </div>
