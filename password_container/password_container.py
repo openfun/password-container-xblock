@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import dateutil.parser
 import pkg_resources
 
 from django.template import Context, Template
 from django.utils import timezone
 
 from xblock.core import XBlock
-from xblock.fields import Scope, Integer, Boolean, String, DateTime
+from xblock.fields import Scope, Integer, Boolean, String, DateTime, Dict
 from xblock.fragment import Fragment
 
 from xblockutils2.studio_editable import StudioContainerXBlockMixin, StudioEditableXBlockMixin
@@ -27,7 +28,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
     has_children = True
     AJAX = False  # if True, children will be loaded by ajax when password is ok instead of reloading the whole page
 
-    editable_fields = ['start_date', 'end_date', 'duration', 'password']
+    editable_fields = ['group_id', 'start_date', 'end_date', 'duration', 'password']
 
     display_name = String(
         help="Component's name in the studio",
@@ -35,6 +36,9 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         scope=Scope.settings
     )
 
+    group_id = String(default="", scope=Scope.settings,
+            display_name=u"Identifiant de groupe",
+            help=u"Tous les Xblock ayant cet identifiant en commun seront débloqués en même temps.")
     start_date = DateTime(default="", scope=Scope.settings,
             display_name=u"Debut de la visibilité",
             help=u"Children visibility start date and time (UTC)")
@@ -50,16 +54,16 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
             display_name=u"Durée de disponibilité",
             help=u"Durée de la disponibilité du contenu en minutes (facultatif)")
 
-
-    nb_tries = Integer(
-            default=0, scope=Scope.user_state,
+    nb_tries = Dict(
+            scope=Scope.preferences,
             help=u"An Integer indicating how many times the user tried authenticating"
             )
-    user_allowed = Boolean(
-            default=False, scope=Scope.user_state,
+    user_allowed = Dict(
+            scope=Scope.preferences,
             help=u"Set to True if user has once been allowed to see children blocks"
             )
-    user_started = DateTime(default=None, scope=Scope.user_state,
+    user_started = Dict(
+            scope=Scope.preferences,
             help=u"Time user started")
 
     def _is_studio(self):
@@ -84,25 +88,56 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
 
     def _render_template(self, ressource, **kwargs):
         template = Template(self.resource_string(ressource))
-        context = dict({'start_date': self.start_date,
+        context = dict({
+                'group_id': self.group_id,
+                'start_date': self.start_date,
                 'end_date': self.end_date,
                 'password': self.password,
-                'nb_tries': self.nb_tries,
+                'nb_tries': self.get_nb_tries(),
                 'duration': self.duration,
-                'user_started': self.user_started
+                'user_started': self.get_user_started(),
                 },
                 **kwargs)
         html = template.render(Context(context))
         return html
 
+    def get_nb_tries(self):
+        if self.group_id in self.nb_tries:
+            return self.nb_tries[self.group_id]
+        else:
+            return 0
+
+    def get_user_allowed(self):
+        if self.group_id in self.user_allowed:
+            return self.user_allowed[self.group_id]
+        else:
+            return False
+
+    def get_user_started(self):
+        if self.group_id in self.user_started and self.user_started[self.group_id]:
+            return dateutil.parser.parse(self.user_started[self.group_id])
+        else:
+            return None
+
+    def set_nb_tries(self, value):
+        self.nb_tries[self.group_id] = value
+
+    def set_user_allowed(self, value):
+        self.user_allowed[self.group_id] = value
+
+    def set_user_started(self, value):
+        self.user_started[self.group_id] = value.isoformat() if value else None  # allow to set to None
 
     @XBlock.json_handler
     def reset_user_state(self, data, prefix=''):
         """Reset user state for testing purpose."""
         # TODO: restrain to staff
-        self.user_allowed = False
-        self.nb_tries = 0
-        self.user_started = None
+        self.user_allowed = {}
+        self.nb_tries = {}
+        self.user_started = {}
+        self.set_user_allowed(False)
+        self.set_nb_tries(0)
+        self.set_user_started(None)
         return {'result': 'ok'}
 
 
@@ -111,41 +146,27 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         email = data.get('email')
         password = data.get('password')
 
-        self.nb_tries += 1
+        self.set_nb_tries(self.get_nb_tries() + 1)
         #if self.runtime.get_real_user is not None:
         #    email=self.runtime.get_real_user(self.runtime.anonymous_student_id).email
 
         if password == self.password:  # A strong identification process is still to imagine
-            self.user_allowed = True
-            self.user_started = timezone.now()
-            if self.AJAX:  # This do not work, as it do not correctly initialyze quizz Javascript
-                fragment = Fragment(self._render_template('static/html/3-available.html'))
-                child_frags = self.runtime.render_children(block=self, view_name='student_view', context=None)
-                html = self._render_template('static/html/sequence.html', children=child_frags)
-                fragment.add_content(html)
-                result = {
-                    'result': True,
-                    'message': u"Go !",
-                    'i4x_uri': self.location.to_deprecated_string(),
-                    'html': fragment.body_html(),
-                    }
-            else:
-                result = {  # Javascript will reload the page
-                    'result': True,
-                    'message': u"The page will reload",
-                    'reload': True
-                    }
-
+            self.set_user_allowed(True)
+            self.set_user_started(timezone.now())
+            result = {  # Javascript will reload the page
+                'result': True,
+                'message': u"The page will reload",
+                'reload': True
+                }
         else:
             result = {
                 'result': False,
-                'nb_tries': self.nb_tries,
+                'nb_tries': self.get_nb_tries(),
                 'message': u"Mot de passe invalide"
                 }
-            if (self.nb_tries > MAX_TRIES):
+            if (self.get_nb_tries() > MAX_TRIES):
                 result['too_much_tries'] = True
                 result['message'] = u"Too many tries"
-
         return result
 
 
@@ -155,10 +176,11 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         Time left until `end_date`
         OR if `duration` > 0: time left between time `user_started` and `duration`
         """
+        user_started = self.get_user_started()
         warning = False
-        if self.duration and self.user_allowed:
+        if self.duration and self.get_user_allowed():
             duration = datetime.timedelta(minutes=self.duration)
-            time_left = (self.user_started + duration) - timezone.now()
+            time_left = (user_started + duration) - timezone.now()
         else:
             time_left = self.end_date - timezone.now()
 
@@ -191,13 +213,13 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
 
         else:  # student view
             if self.start_date and self.end_date:
-
+                user_started = self.get_user_started()
                 now = timezone.now()
                 if (now > self.start_date and now < self.end_date):
                     # with are in the availability interval
-                    if self.user_allowed:
+                    if self.get_user_allowed():
                         # user is granted (entered a good password)
-                        if self.duration and (now > self.user_started + datetime.timedelta(minutes=self.duration)):
+                        if self.duration and (now > user_started + datetime.timedelta(minutes=self.duration)):
                             # time allowed to access content is elapsed
                             fragment = Fragment(self._render_template('static/html/5-time-elapsed.html'))
                             fragment.initialize_js('PasswordContainerXBlock', 'bindResetButton')  # call Run to allow reset in debug mode
@@ -211,14 +233,14 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
                             fragment.initialize_js('PasswordContainerXBlock', 'startExam')
                     else:
                         # user is not granted
-                        if self.nb_tries < MAX_TRIES:
+                        if self.get_nb_tries() < MAX_TRIES:
                             # password is now required
                             fragment = Fragment(self._render_template('static/html/2-enter-password.html'))
                             child_frags = self.runtime.render_children(block=self, view_name='student_view', context=context)
                             fragment.add_frags_resources(child_frags)
                             fragment.initialize_js('PasswordContainerXBlock', 'checkPassword')
                         else:
-                            # too much password failure
+                            # too much password failures
                             fragment = Fragment(self._render_template('static/html/4-not-available-anymore.html'))
 
                 elif now > self.end_date:
