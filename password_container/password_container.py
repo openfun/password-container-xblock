@@ -4,12 +4,15 @@ import datetime
 import dateutil.parser
 import pkg_resources
 
+from django import forms
 from django.template import Context, Template
 from django.utils import timezone
 
 from xblock.core import XBlock
-from xblock.fields import Scope, Integer, Boolean, String, DateTime, Dict
+from xblock.exceptions import JsonHandlerError
+from xblock.fields import Scope, UserScope, BlockScope, Integer, Boolean, String, DateTime, Dict
 from xblock.fragment import Fragment
+from xblock.validation import Validation
 
 from xblockutils2.studio_editable import StudioContainerXBlockMixin, StudioEditableXBlockMixin
 
@@ -20,13 +23,24 @@ TIME_LEFT_WARNING = 60 * 5
 # '%Y-%m-%dT%H:%M:%S.%f'
 
 
-class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMixin, XBlock):
+class XBlockForm(forms.Form):
+    group_id = forms.CharField(label=u"Identifiant de groupe",
+            help_text=u"Tous les Xblock ayant cet identifiant en commun seront débloqués en même temps.")
+    start_date = forms.SplitDateTimeField(label=u"Debut de la visibilité",
+            help_text=u"Children visibility start date and time (UTC)")
+    end_date = forms.SplitDateTimeField(label=u"Fin de la visibilité",
+            help_text=u"Children visibility end date and time (UTC)")
+    password = forms.CharField(label=u"Mot de passe",
+            help_text=u"Global password, all student will use this password to unlock content")
+    duration = forms.IntegerField(label=u"Durée de disponibilité",
+            help_text=u"Durée de la disponibilité du contenu en minutes (facultatif)")
+
+class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
     """
     This Xblock will restrain access to its children to a time period and an identication process
     """
 
     has_children = True
-    AJAX = False  # if True, children will be loaded by ajax when password is ok instead of reloading the whole page
 
     editable_fields = ['group_id', 'start_date', 'end_date', 'duration', 'password']
 
@@ -39,18 +53,16 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
     group_id = String(default="", scope=Scope.settings,
             display_name=u"Identifiant de groupe",
             help=u"Tous les Xblock ayant cet identifiant en commun seront débloqués en même temps.")
-    start_date = DateTime(default="", scope=Scope.settings,
+    start_date = Dict(scope=Scope.content,
             display_name=u"Debut de la visibilité",
             help=u"Children visibility start date and time (UTC)")
-    end_date = DateTime(default="", scope=Scope.settings,
+    end_date = Dict(scope=Scope.content,
             display_name=u"Fin de la visibilité",
             help=u"Children visibility end date and time (UTC)")
-
-    password = String(default="", scope=Scope.settings,
+    password = Dict(scope=Scope.content,
             display_name=u"Mot de passe",
             help=u"Global password, all student will use this password to unlock content")
-    duration = Integer(
-            default=None, scope=Scope.settings,
+    duration = Dict(scope=Scope.content,
             display_name=u"Durée de disponibilité",
             help=u"Durée de la disponibilité du contenu en minutes (facultatif)")
 
@@ -90,16 +102,41 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         template = Template(self.resource_string(ressource))
         context = dict({
                 'group_id': self.group_id,
-                'start_date': self.start_date,
-                'end_date': self.end_date,
-                'password': self.password,
+                'start_date': self.get_start_date(),
+                'end_date': self.get_end_date(),
+                'password': self.get_password(),
                 'nb_tries': self.get_nb_tries(),
-                'duration': self.duration,
+                'duration': self.get_duration(),
                 'user_started': self.get_user_started(),
                 },
                 **kwargs)
         html = template.render(Context(context))
         return html
+
+    def get_start_date(self):
+        if self.group_id in self.start_date and self.start_date[self.group_id]:
+            return dateutil.parser.parse(self.start_date[self.group_id])
+        else:
+            return None
+
+    def get_end_date(self):
+        if self.group_id in self.end_date and self.end_date[self.group_id]:
+            return dateutil.parser.parse(self.end_date[self.group_id])
+        else:
+            return None
+
+    def get_password(self):
+        if self.group_id in self.password:
+            return self.password[self.group_id]
+        else:
+            return ''
+
+    def get_duration(self):
+        if self.group_id in self.duration:
+            return self.duration[self.group_id]
+        else:
+            return 0
+
 
     def get_nb_tries(self):
         if self.group_id in self.nb_tries:
@@ -119,6 +156,19 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         else:
             return None
 
+
+    def set_start_date(self, value):
+        self.start_date[self.group_id] = value.isoformat() if value else None
+
+    def set_end_date(self, value):
+        self.end_date[self.group_id] = value.isoformat() if value else None
+
+    def set_password(self, value):
+        self.password[self.group_id] = value
+
+    def set_duration(self, value):
+        self.duration[self.group_id] = value
+
     def set_nb_tries(self, value):
         self.nb_tries[self.group_id] = value
 
@@ -126,7 +176,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         self.user_allowed[self.group_id] = value
 
     def set_user_started(self, value):
-        self.user_started[self.group_id] = value.isoformat() if value else None  # allow to set to None
+        self.user_started[self.group_id] = value.isoformat() if value else None
 
     @XBlock.json_handler
     def reset_user_state(self, data, prefix=''):
@@ -150,7 +200,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         #if self.runtime.get_real_user is not None:
         #    email=self.runtime.get_real_user(self.runtime.anonymous_student_id).email
 
-        if password == self.password:  # A strong identification process is still to imagine
+        if password == self.get_password():  # A strong identification process is still to imagine
             self.set_user_allowed(True)
             self.set_user_started(timezone.now())
             result = {  # Javascript will reload the page
@@ -178,11 +228,11 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
         """
         user_started = self.get_user_started()
         warning = False
-        if self.duration and self.get_user_allowed():
-            duration = datetime.timedelta(minutes=self.duration)
+        if self.get_duration() and self.get_user_allowed():
+            duration = datetime.timedelta(minutes=self.get_duration())
             time_left = (user_started + duration) - timezone.now()
         else:
-            time_left = self.end_date - timezone.now()
+            time_left = self.get_end_date() - timezone.now()
 
         days = time_left.days
         seconds = time_left.seconds % 60
@@ -204,6 +254,64 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
             }
 
 
+    def studio_view(self, context=None):
+        fragment = Fragment()
+        initial = {
+                'group_id': self.group_id,
+                'start_date': self.get_start_date(),
+                'end_date': self.get_end_date(),
+                'password': self.get_password(),
+                'duration': self.get_duration(),
+                }
+        form = XBlockForm(initial=initial)
+        context = {}
+        context['form'] = form
+        fragment.content = self._render_template('static/html/studio_edit.html', **context)
+
+        fragment.add_javascript(self.resource_string("static/js/src/studio_edit.js"))
+
+        #fragment.add_javascript(loader.load_unicode('public/studio_edit.js'))
+        fragment.initialize_js('PasswordContainerStudio')
+        return fragment
+
+
+    @XBlock.json_handler
+    def submit_studio_edits(self, data, suffix=''):
+
+        form = XBlockForm(data=data['values'])
+        if form.is_valid():
+            self.group_id = form.cleaned_data['group_id']
+            self.set_start_date(form.cleaned_data['start_date'])
+            self.set_end_date(form.cleaned_data['end_date'])
+            self.set_duration(form.cleaned_data['duration'])
+            self.set_password(form.cleaned_data['password'])
+
+            return {'result': 'success'}
+
+        error_message = u""
+        for field, message in form.errors.items():
+            error_message += u"<strong>%s</strong> : %s<br>" % (form.fields[field].label, ' '.join(message))
+
+        raise JsonHandlerError(400, error_message)
+
+
+    @XBlock.json_handler
+    def get_existing_group(self, data, suffix=''):
+        import ipdb; ipdb.set_trace()
+        result = {}
+        group_id = data['group_id']
+        if group_id in self.start_date.keys():
+            result['start_date'] = self.start_date[group_id]
+            result['start_date_0'] = dateutil.parser.parse(self.start_date[group_id]).strftime('%d/%m/%Y')
+            result['start_date_1'] = dateutil.parser.parse(self.start_date[group_id]).strftime('%H:%M')
+            result['end_date_0'] = dateutil.parser.parse(self.end_date[group_id]).strftime('%d/%m/%Y')
+            result['end_date_1'] = dateutil.parser.parse(self.end_date[group_id]).strftime('%H:%M')
+            result['end_date'] = self.end_date[group_id]
+            result['duration'] = self.duration[group_id]
+            result['password'] = self.password[group_id]
+        return result
+
+
     def student_view(self, context=None):
         if self._is_studio():  # studio view
             fragment = Fragment(self._render_template('static/html/studio.html'))
@@ -212,14 +320,14 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
             return fragment
 
         else:  # student view
-            if self.start_date and self.end_date:
+            if self.get_start_date() and self.get_end_date():
                 user_started = self.get_user_started()
                 now = timezone.now()
-                if (now > self.start_date and now < self.end_date):
+                if (now > self.get_start_date() and now < self.get_end_date()):
                     # with are in the availability interval
                     if self.get_user_allowed():
                         # user is granted (entered a good password)
-                        if self.duration and (now > user_started + datetime.timedelta(minutes=self.duration)):
+                        if self.get_duration() and (now > user_started + datetime.timedelta(minutes=self.get_duration())):
                             # time allowed to access content is elapsed
                             fragment = Fragment(self._render_template('static/html/5-time-elapsed.html'))
                             fragment.initialize_js('PasswordContainerXBlock', 'bindResetButton')  # call Run to allow reset in debug mode
@@ -243,7 +351,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
                             # too much password failures
                             fragment = Fragment(self._render_template('static/html/4-not-available-anymore.html'))
 
-                elif now > self.end_date:
+                elif now > self.get_end_date():
                     # content is no more available
                     fragment = Fragment(self._render_template('static/html/4-not-available-anymore.html'))
                 else:
@@ -256,7 +364,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, StudioEditableXBlockMi
                 return fragment
 
             # we should not be there !
-            frag = Fragment("Erreur: les dates ne sont pas valides...")
+            frag = Fragment(u"Erreur: les dates ne sont pas valides...")
             return frag
 
 
