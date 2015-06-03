@@ -1,8 +1,10 @@
 {% load tz %}
-<p>
-    <br>
-    Le contenu de ce block ne sera visible par les étudiants que du <strong>{% localtime off %}{{ start_date }} UTC</strong> au <strong>{{ end_date }} UTC{% endlocaltime %}</strong>
-    <br>
-    Ce block ne sera visible qu'avec le mot de passe: <strong>{{ password }}</strong>
-    <br>
-</p>
+<div class="password-container">
+    <p class="information"><i class="icon fa fa-information"></i><span>
+        <br>
+        Ce xblock appartient au groupe <strong>{{ group_id }}</strong>, son contenu ne sera accessible par les étudiants que du <strong>{% localtime off %}{{ start_date }} UTC</strong> au <strong>{{ end_date }} UTC{% endlocaltime %}</strong>
+        <br>
+        Ce block ne sera visible qu'avec le mot de passe: <strong>{{ password }}</strong> pendant une durée de <strong>{{ duration }} mn.</strong>
+        <br>
+    </span></p>
+</div>

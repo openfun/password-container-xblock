@@ -3,14 +3,17 @@ function PasswordContainerStudio(runtime, element) {
     "use strict";
 
     console.log('PasswordContainerStudio: init')
-    $(element).find('#id_start_date_0').attr({'placeholder': 'MM/DD/YYY'}).addClass('hasDatepicker')
+    $(element).find('#id_start_date_0').attr({'placeholder': 'JJ/MM/AAAA'}).addClass('hasDatepicker')
     $(element).find('#id_start_date_1').attr({'placeholder': 'HH:MM'}).addClass('ui-timepicker-input')
-    $(element).find('#id_end_date_0').attr({'placeholder': 'MM/DD/YYY'}).addClass('hasDatepicker')
+    $(element).find('#id_end_date_0').attr({'placeholder': 'JJ/MM/AAAA'}).addClass('hasDatepicker')
     $(element).find('#id_end_date_1').attr({'placeholder': 'HH:MM'}).addClass('ui-timepicker-input')
-    // $( ".hasDatepicker" ).datepicker();
+
     var getExistingGroupUrl = runtime.handlerUrl(element, 'get_existing_group');
-    $(element).find('#id_group_id').bind('keyup', function(e){
-        var group_id = $(this).val();
+    var $group_id = $(element).find('#id_group_id');
+    $group_id.after($('<span>').addClass('count-instance'));
+    $group_id.bind('keyup', function(e){
+        var $span = $(this).siblings('span.count-instance').html('');
+        var group_id = $(this).val();  // we'd like to display here the count of other instances of the same group, but we do not know how to count them for now
         console.log(group_id)
         if (group_id !== '') {
             var data = {'group_id': group_id}
@@ -32,6 +35,7 @@ function PasswordContainerStudio(runtime, element) {
             });
         }
     });
+    // $group_id.trigger('keyup');
 
     var studio_submit = function(data) {
         console.log('PasswordContainerStudio: submiting')

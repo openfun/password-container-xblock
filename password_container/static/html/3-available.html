@@ -1,14 +1,16 @@
 {% load tz %}
-<div id="time-display" class="">
-    Ce contenu est disponible jusqu'au {% localtime off %}{{ end_date }}{% endlocaltime %} UTC
-    <br>
-    Il vous reste <span id="time-left">---</span> pour valider ce quizz.<br>
-    </p>
-    <p>
-    <!-- TODO: display only if user is course staff. -->
-        <a href="#" class="reset-user-state">Réinitialiser l'état</a>
-    </p>
+<div class="password-container">
+    <div id="time-display" class="">
+        Ce contenu est disponible jusqu'au {% localtime off %}{{ end_date }}{% endlocaltime %} UTC
+        <br>
+        Il vous reste <span id="time-left">---</span> pour valider ce quizz.<br>
+        </p>
+        <p>
+        <!-- TODO: display only if user is course staff. -->
+            <a href="#" class="reset-user-state">Réinitialiser l'état</a>
+        </p>
 
+    </div>
 </div>
 
 <br>

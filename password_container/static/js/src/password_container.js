@@ -41,7 +41,6 @@ var PasswordContainerXBlock = (function(){
             },
             error: errorHandler
         });
-
     }
 
     var bindResetButton = function(runtime, element) {
