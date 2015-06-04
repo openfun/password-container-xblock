@@ -14,7 +14,8 @@ from xblock.fragment import Fragment
 from xblock.validation import Validation
 from xmodule_django.models import CourseKeyField
 
-from xblockutils2.studio_editable import StudioContainerXBlockMixin, StudioEditableXBlockMixin
+# We forked xblockutils because the old version living in the edx-plaform venv do not have StudioContainerXBlockMixin
+from xblockutils2.studio_editable import StudioContainerXBlockMixin
 
 from .models import GroupConfiguration
 from .forms import PasswordContainerXBlockForm
@@ -200,6 +201,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
             }
 
     def studio_view(self, context=None):
+        """This is the view displaying xblock form in studio."""
         fragment = Fragment()
         initial = {
                 'group_id': self.group_id,
@@ -212,10 +214,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
         context = {}
         context['form'] = form
         fragment.content = self._render_template('static/html/studio_edit.html', **context)
-
         fragment.add_javascript(self.resource_string("static/js/src/studio_edit.js"))
-
-        #fragment.add_javascript(loader.load_unicode('public/studio_edit.js'))
         fragment.initialize_js('PasswordContainerStudio')
         return fragment
 
@@ -256,11 +255,17 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
             pass
         return result
 
+    def author_edit_view(self, context):
+        """We override this view from StudioContainerXBlockMixin to allow
+        the addition of children blocks."""
+        fragment = Fragment()
+        self.render_children(context, fragment, can_reorder=True, can_add=True)
+        return fragment
+
     def student_view(self, context=None):
         if self._is_studio():  # studio view
             fragment = Fragment(self._render_template('static/html/studio.html'))
             fragment.add_css(self.resource_string('static/css/password-container.css'))
-            child_frags = self.render_children(context, fragment, can_reorder=False, can_add=True)
             return fragment
 
         else:  # student view
@@ -310,10 +315,3 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
             # we should not be here !
             frag = Fragment(u"Erreur: les dates ne sont pas valides...")
             return frag
-
-
-        #html = self.resource_string("static/html/password_container.html")
-        #frag = Fragment(html.format(self=self))
-        #frag.add_css(self.resource_string("static/css/password_container.css"))
-        #frag.add_javascript(self.resource_string("static/js/src/password_container.js"))
-        #frag.initialize_js('PasswordContainerXBlock')

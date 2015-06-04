@@ -22,14 +22,13 @@ def package_data(pkg, roots):
 
 setup(
     name='password_container-xblock',
-    version='0.1',
+    version='0.2',
     description=u"This Xblock will restrain acces to its children to a time period and an identication process",
     packages=[
         'password_container',
     ],
     install_requires=[
         'XBlock',
-        #'xblockutils'
     ],
     entry_points={
         'xblock.v1': [
