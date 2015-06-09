@@ -81,6 +81,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
     def _render_template(self, ressource, **kwargs):
         template = Template(self.resource_string(ressource))
         context = dict({
+                'user_is_staff': self.runtime.user_is_staff,
                 'group_id': self.group_id,
                 'start_date': self.configuration.start_date,
                 'end_date': self.configuration.end_date,
@@ -137,11 +138,12 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
     @XBlock.json_handler
     def reset_user_state(self, data, prefix=''):
         """Reset user state for testing purpose."""
-        # TODO: restrain to staff
-        self.set_user_allowed(False)
-        self.set_nb_tries(0)
-        self.set_user_started(None)
-        return {'result': 'ok'}
+        if self.runtime.user_is_staff:
+            self.set_user_allowed(False)
+            self.set_nb_tries(0)
+            self.set_user_started(None)
+            return {'result': 'ok'}
+        return {'result': 'fail'}
 
     @XBlock.json_handler
     def check_password(self, data, prefix=''):

@@ -6,8 +6,9 @@
         Il vous reste <span id="time-left">---</span> pour valider ce quizz.<br>
         </p>
         <p>
-        <!-- TODO: display only if user is course staff. -->
+        {% if user_is_staff %}
             <a href="#" class="reset-user-state">Réinitialiser l'état</a>
+        {% endif %}
         </p>
 
     </div>
