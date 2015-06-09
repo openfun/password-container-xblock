@@ -1,10 +1,15 @@
 {% load tz %}
 <div class="password-container">
-    <p class="information"><i class="icon fa fa-information"></i><span>
+    <p class="information">
+    {% if group_id %}
+        Cette activité appartient au groupe <strong>"{{ group_id }}"</strong>, son contenu ne sera accessible par les étudiants que du <strong>{% localtime off %}{{ start_date }} UTC</strong> au <strong>{{ end_date }} UTC{% endlocaltime %}</strong>
         <br>
-        Ce xblock appartient au groupe <strong>{{ group_id }}</strong>, son contenu ne sera accessible par les étudiants que du <strong>{% localtime off %}{{ start_date }} UTC</strong> au <strong>{{ end_date }} UTC{% endlocaltime %}</strong>
+        Ce block ne sera visible qu'avec le mot de passe: <strong>"{{ password }}"</strong>pendant une durée de <strong>{{ duration }} mn.</strong>
         <br>
-        Ce block ne sera visible qu'avec le mot de passe: <strong>{{ password }}</strong> pendant une durée de <strong>{{ duration }} mn.</strong>
+        Vous pouvez ajouter du contenu en cliquant sur "Voir"
         <br>
+    {% else %}
+        Cette activité n'est pas configurées, cliquez sur "Editer".
+    {% endif %}
     </span></p>
 </div>

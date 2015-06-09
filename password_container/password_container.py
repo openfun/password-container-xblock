@@ -313,5 +313,5 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
                 return fragment
 
             # we should not be here !
-            frag = Fragment(u"Erreur: les dates ne sont pas valides...")
+            frag = Fragment(u"Cette activité n'est pas disponible")
             return frag
