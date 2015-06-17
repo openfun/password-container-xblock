@@ -81,7 +81,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
     def _render_template(self, ressource, **kwargs):
         template = Template(self.resource_string(ressource))
         context = dict({
-                'user_is_staff': self.runtime.user_is_staff,
+                #'user_is_staff': self.runtime.user_is_staff, # this flag is not available here...
                 'group_id': self.group_id,
                 'start_date': self.configuration.start_date,
                 'end_date': self.configuration.end_date,
