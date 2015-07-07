@@ -69,6 +69,9 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
             pass
         return studio
 
+    def _user_is_staff(self):
+        return getattr(self.runtime, 'user_is_staff', False)
+
     def get_icon_class(self):
         """Return the CSS class to be used in courseware sequence list."""
         return 'seq_problem'
@@ -81,7 +84,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
     def _render_template(self, ressource, **kwargs):
         template = Template(self.resource_string(ressource))
         context = dict({
-                #'user_is_staff': self.runtime.user_is_staff, # this flag is not available here...
+                'user_is_staff': self._user_is_staff(),
                 'group_id': self.group_id,
                 'start_date': self.configuration.start_date,
                 'end_date': self.configuration.end_date,
@@ -96,7 +99,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
         return html
 
     def get_configuration(self, group_id=None):
-        """Retrieve existing configuration if for a given group_id` or create a new one."""
+        """Retrieve existing configuration if for a given `group_id` or create a new one."""
         group_id = group_id or self.group_id
         try:
             self.configuration = GroupConfiguration.objects.get(
@@ -138,7 +141,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
     @XBlock.json_handler
     def reset_user_state(self, data, prefix=''):
         """Reset user state for testing purpose."""
-        if self.runtime.user_is_staff:
+        if self._user_is_staff():
             self.set_user_allowed(False)
             self.set_nb_tries(0)
             self.set_user_started(None)

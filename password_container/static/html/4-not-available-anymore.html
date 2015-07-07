@@ -2,8 +2,11 @@
     <p class="information"><i class="icon fa fa-information"></i>
         <span>
             Ce contenu n'est plus disponible.<br><br>
-            <!-- TODO: display only if user is course staff. -->
-            <a href="#" class="reset-user-state">Réinitialiser l'état</a>
+
+            {% if user_is_staff %}
+                <a href="#" class="reset-user-state">Réinitialiser l'état</a>
+            {% endif %}
+
         </span>
     </p>
 </div>
