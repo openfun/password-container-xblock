@@ -3,16 +3,20 @@
 import datetime
 import dateutil.parser
 import pkg_resources
+from webob.response import Response
 
+from django.contrib.auth.models import User
 from django.template import Context, Template
 from django.utils import timezone
+
+from courseware.models import XModuleStudentPrefsField
+from opaque_keys.edx.block_types import BlockTypeKeyV1
 
 from xblock.core import XBlock
 from xblock.exceptions import JsonHandlerError
 from xblock.fields import Scope, UserScope, BlockScope, Integer, Boolean, String, DateTime, Dict
 from xblock.fragment import Fragment
 from xblock.validation import Validation
-from xmodule_django.models import CourseKeyField
 
 # We forked xblockutils because the old version living in the edx-plaform venv do not have StudioContainerXBlockMixin
 from xblockutils2.studio_editable import StudioContainerXBlockMixin
@@ -34,8 +38,8 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
 
     has_children = True
 
-    editable_fields = ['group_id', 'start_date', 'end_date', 'duration', 'password']
 
+    editable_fields = ['group_id', 'start_date', 'end_date', 'duration', 'password']
     display_name = String(
         help="Component's name in the studio",
         default="Time and password limited container",
@@ -52,7 +56,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
     user_allowed = Dict(
             scope=Scope.preferences,
             help=u"Set to True if user has once been allowed to see children blocks"
-            )
+            ) 
     user_started = Dict(
             scope=Scope.preferences,
             help=u"Time user started")
@@ -138,15 +142,37 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
     def set_user_started(self, value):
         self.user_started[self.group_id] = value.isoformat() if value else None
 
-    @XBlock.json_handler
-    def reset_user_state(self, data, prefix=''):
-        """Reset user state for testing purpose."""
-        if self._user_is_staff():
-            self.set_user_allowed(False)
-            self.set_nb_tries(0)
-            self.set_user_started(None)
-            return {'result': 'ok'}
-        return {'result': 'fail'}
+    @XBlock.handler
+    def reset_user_state(self, request, context=None):
+        """Reset user state."""
+        if not self._user_is_staff():
+            return
+        try:
+            user = User.objects.get(username=request.GET['username'])
+        except User.DoesNotExist:
+            return Response(u"L'utilisateur n'existe pas.")
+
+        preferences = XModuleStudentPrefsField.objects.filter(module_type=BlockTypeKeyV1('xblock.v1', 'password_container'),
+                                                              student=user)
+        try:
+            preference = preferences.get(field_name='nb_tries')
+        except XModuleStudentPrefsField.DoesNotExist:
+            pass
+        else:
+            preference.delete()
+        try:
+            preference = preferences.get(field_name='user_allowed')
+        except XModuleStudentPrefsField.DoesNotExist:
+            pass
+        else:
+            preference.delete()
+        try:
+            preference = preferences.get(field_name='user_started')
+        except XModuleStudentPrefsField.DoesNotExist:
+            pass
+        else:
+            preference.delete()
+        return Response(u"Données réinitialisées.")
 
     @XBlock.json_handler
     def check_password(self, data, prefix=''):
@@ -267,12 +293,23 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
         self.render_children(context, fragment, can_reorder=True, can_add=True)
         return fragment
 
+    def staff_view(self):
+        fragment = Fragment(self._render_template('static/html/staff-view.html'))
+        child_frags = self.runtime.render_children(block=self, view_name='student_view')
+        html = self._render_template('static/html/sequence.html', children=child_frags)
+        fragment.add_content(html)
+        fragment.add_frags_resources(child_frags)
+        fragment.add_javascript(self.resource_string("static/js/src/lms_view.js"))
+        fragment.initialize_js('PasswordContainerLmsView')
+        return fragment
+
     def student_view(self, context=None):
         if self._is_studio():  # studio view
             fragment = Fragment(self._render_template('static/html/studio.html'))
             fragment.add_css(self.resource_string('static/css/password-container.css'))
             return fragment
-
+        if self._user_is_staff():
+            return self.staff_view()
         else:  # student view
             if self.configuration.start_date and self.configuration.end_date:
                 user_started = self.get_user_started()
@@ -320,3 +357,4 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
             # we should not be here !
             frag = Fragment(u"Cette activité n'est pas disponible")
             return frag
+
