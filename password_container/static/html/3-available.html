@@ -1,13 +1,15 @@
 {% load tz %}
+{% load i18n %}
+
 <div class="password-container">
     <div id="time-display" class="">
-        Ce contenu est disponible jusqu'au {% localtime off %}{{ end_date }}{% endlocaltime %} UTC
+        {% trans "Ce contenu est disponible jusqu'au" %} {% localtime off %}{{ end_date }}{% endlocaltime %} UTC
         <br>
-        Il vous reste <span id="time-left">---</span> pour valider ce quizz.<br>
+        {% blocktrans %}Il vous reste <span id="time-left">---</span> pour valider ce quizz.{% endblocktrans %}<br>
         </p>
         <p>
         {% if user_is_staff %}
-            <a href="#" class="reset-user-state">Réinitialiser l'état</a>
+            <a href="#" class="reset-user-state">{% trans "Réinitialiser l'état" %}</a>
         {% endif %}
         </p>
 

@@ -1,11 +1,13 @@
+{% load i18n %}
+
 <div class="password-container">
     <p class="information"><i class="icon fa fa-information"></i>
         <span>
-            Ce contenu n'est plus disponible.<br>
-            Le temps imparti est écoulé.<br>
+            {% trans "Ce contenu n'est plus disponible." %}<br>
+            {% trans "Le temps imparti est écoulé." %}<br>
 
             {% if user_is_staff %}
-                <a href="#" class="reset-user-state">Réinitialiser l'état</a>
+                <a href="#" class="reset-user-state">{% trans "Réinitialiser l'état" %}</a>
             {% endif %}
         </span>
     </p>

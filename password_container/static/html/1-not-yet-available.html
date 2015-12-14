@@ -1,10 +1,11 @@
 {% load tz %}
+{% load i18n %}
 
 <div class="password-container">
     <p class="warning"><i class="icon fa fa-warning"></i>
         <span>
-            Ce contenu n'est pas encore disponible.<br>
-            Date de disponibilité: {% localtime off %}{{ start_date }}{% endlocaltime %} UTC<br>
+            {% trans "Ce contenu n'est pas encore disponible." %}<br>
+            {% trans "Date de disponibilité:" %} {% localtime off %}{{ start_date }}{% endlocaltime %} UTC<br>
         </span>
     </p>
 </div>

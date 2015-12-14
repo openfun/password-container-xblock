@@ -8,7 +8,7 @@ from webob.response import Response
 from django.contrib.auth.models import User
 from django.template import Context, Template
 from django.utils import timezone
-
+from django.utils.translation import ugettext_lazy, ugettext as _
 from courseware.models import XModuleStudentPrefsField
 from opaque_keys.edx.block_types import BlockTypeKeyV1
 
@@ -30,7 +30,6 @@ TIME_LEFT_WARNING = 60 * 5
 
 # '%Y-%m-%dT%H:%M:%S.%f'
 
-
 class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
     """
     This Xblock will restrain access to its children to a time period and an identication process
@@ -41,25 +40,25 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
 
     editable_fields = ['group_id', 'start_date', 'end_date', 'duration', 'password']
     display_name = String(
-        help="Component's name in the studio",
+        help=ugettext_lazy("Component's name in the studio"),
         default="Time and password limited container",
         scope=Scope.settings
     )
     group_id = String(default="", scope=Scope.settings,
-            display_name=u"Identifiant de groupe",
-            help=u"Tous les Xblock ayant cet identifiant en commun seront débloqués en même temps.")
+            display_name=ugettext_lazy('Identifiant de groupe'),
+            help=ugettext_lazy(u"Tous les Xblock ayant cet identifiant en commun seront débloqués en même temps."))
 
     nb_tries = Dict(
             scope=Scope.preferences,
-            help=u"An Integer indicating how many times the user tried authenticating"
+            help=ugettext_lazy(u"An Integer indicating how many times the user tried authenticating")
             )
     user_allowed = Dict(
             scope=Scope.preferences,
-            help=u"Set to True if user has once been allowed to see children blocks"
+            help=ugettext_lazy(u"Set to True if user has once been allowed to see children blocks")
             ) 
     user_started = Dict(
             scope=Scope.preferences,
-            help=u"Time user started")
+            help=ugettext_lazy(u"Time user started"))
 
     def __init__(self, *args, **kwargs):
         super(PasswordContainerXBlock, self).__init__(*args, **kwargs)
@@ -150,7 +149,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
         try:
             user = User.objects.get(username=request.GET['username'])
         except User.DoesNotExist:
-            return Response(u"L'utilisateur n'existe pas.")
+            return Response(_(u"L'utilisateur n'existe pas."))
 
         preferences = XModuleStudentPrefsField.objects.filter(module_type=BlockTypeKeyV1('xblock.v1', 'password_container'),
                                                               student=user)
@@ -172,7 +171,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
             pass
         else:
             preference.delete()
-        return Response(u"Données réinitialisées.")
+        return Response(_(u"Données réinitialisées."))
 
     @XBlock.json_handler
     def check_password(self, data, prefix=''):
@@ -184,18 +183,18 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
             self.set_user_started(timezone.now())
             result = {  # Javascript will reload the page
                 'result': True,
-                'message': u"The page will reload",
+                'message': _(u"The page will reload"),
                 'reload': True
                 }
         else:
             result = {
                 'result': False,
                 'nb_tries': self.get_nb_tries(),
-                'message': u"Mot de passe invalide"
+                'message': _(u"Mot de passe invalide")
                 }
             if (self.get_nb_tries() > MAX_TRIES):
                 result['too_much_tries'] = True
-                result['message'] = u"Too many tries"
+                result['message'] = _(u"Too many tries")
         return result
 
     @XBlock.json_handler
@@ -218,11 +217,11 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
         hours = time_left.seconds // 3600
         total = days * 3600 * 24 + time_left.seconds
 
-        string = u"{days} jours " if days else u""
-        string += u"{hours:02} heures {minutes:02} minutes"
+        string = _(u"{days} jours ") if days else u""
+        string += _(u"{hours:02} heures {minutes:02} minutes")
 
         if total < TIME_LEFT_WARNING:
-            string += u" {seconds:02} secondes"
+            string += _(u" {seconds:02} secondes")
             warning = True
 
         return {
@@ -355,6 +354,6 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
                 return fragment
 
             # we should not be here !
-            frag = Fragment(u"Cette activité n'est pas disponible")
+            frag = Fragment(_(u"Cette activité n'est pas disponible"))
             return frag
 
