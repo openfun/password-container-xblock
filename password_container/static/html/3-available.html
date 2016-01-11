@@ -3,13 +3,13 @@
 
 <div class="password-container">
     <div id="time-display" class="">
-        {% trans "Ce contenu est disponible jusqu'au" %} {% localtime off %}{{ end_date }}{% endlocaltime %} UTC
+        {% trans "The content is available from" %} {% localtime off %}{{ end_date }}{% endlocaltime %} UTC
         <br>
-        {% blocktrans %}Il vous reste <span id="time-left">---</span> pour valider ce quizz.{% endblocktrans %}<br>
+        {% blocktrans %}You still have <span id="time-left">---</span> to finish this activity.{% endblocktrans %}<br>
         </p>
         <p>
         {% if user_is_staff %}
-            <a href="#" class="reset-user-state">{% trans "Réinitialiser l'état" %}</a>
+            <a href="#" class="reset-user-state">{% trans "Reset status" %}</a>
         {% endif %}
         </p>
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-14 11:37+0000\n"
+"POT-Creation-Date: 2016-01-11 10:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,217 +18,227 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
 
-#: forms.py:8 password_container.py:48
-msgid "Identifiant de groupe"
-msgstr ""
+#: forms.py:8 models.py:12 password_container.py:48
+msgid "Group ID"
+msgstr "Identifiant de groupe"
 
 #: forms.py:9
-msgid ""
+msgid "All activities with this group ID will be unlocked at the same time."
+msgstr ""
 "Tous les activités ayant cet identifiant en commun seront débloquées en même "
 "temps."
-msgstr ""
 
 #: forms.py:10 models.py:13
-msgid "Debut de la visibilité"
-msgstr ""
+msgid "Start visibility"
+msgstr "Debut de la visibilité"
 
 #: forms.py:11
-msgid "Date de début de la visibilité du contenu (UTC)"
-msgstr ""
+msgid ""
+"Start date (MM/DD/YYYY) / time (HH/MM/SS, using 24 hour clock) for student "
+"to enter the password. Set time in EST the software will show it in UTC"
+msgstr "Date de début de la visibilité du contenu (UTC)"
 
 #: forms.py:12 models.py:14
-msgid "Fin de la visibilité"
-msgstr ""
+msgid "End Visibility"
+msgstr "Fin de la visibilité"
 
 #: forms.py:13
-msgid "Date de fin de la visibilité du contenu (UTC)"
-msgstr ""
+msgid ""
+"End date (MM/DD/YYYY) / time (HH/MM/SS, using 24 hour clock) for student to "
+"enter the password. Set time in EST - the software will show it in UTC"
+msgstr "Date de fin de la visibilité du contenu (UTC)"
 
 #: forms.py:14 models.py:15
-msgid "Mot de passe"
-msgstr ""
+msgid "Password"
+msgstr "Mot de passe"
 
 #: forms.py:15
-msgid "Mot de passe pour deverouiller le contenu"
-msgstr ""
+msgid "Password to start the activities"
+msgstr "Mot de passe pour deverouiller le contenu"
 
 #: forms.py:16 models.py:16
-msgid "Durée de disponibilité"
-msgstr ""
+msgid "Assessment duration"
+msgstr "Durée de disponibilité"
 
 #: forms.py:17
-msgid "Durée de la disponibilité du contenu en minutes"
-msgstr ""
+msgid ""
+"Time to complete the ativities once the student has entered the password (in "
+"muinutes)"
+msgstr "Durée de la disponibilité du contenu en minutes"
 
 #: models.py:11
-msgid "Cours"
-msgstr ""
-
-#: models.py:12
-msgid "Identifiant du groupe"
-msgstr ""
+msgid "Course"
+msgstr "Cours"
 
 #: password_container.py:43
 msgid "Component's name in the studio"
-msgstr ""
+msgstr "Component's name in the studio"
 
 #: password_container.py:49
-msgid ""
+msgid "All Xblock having the same group ID will be released simultaneously."
+msgstr ""
 "Tous les Xblock ayant cet identifiant en commun seront débloqués en même "
 "temps."
-msgstr ""
 
 #: password_container.py:53
 msgid "An Integer indicating how many times the user tried authenticating"
-msgstr ""
+msgstr "An Integer indicating how many times the user tried authenticating"
 
 #: password_container.py:57
 msgid "Set to True if user has once been allowed to see children blocks"
-msgstr ""
+msgstr "Set to True if user has once been allowed to see children blocks"
 
 #: password_container.py:61
 msgid "Time user started"
-msgstr ""
+msgstr "Time user started"
 
 #: password_container.py:152
-msgid "L'utilisateur n'existe pas."
-msgstr ""
+msgid "The student does not exist."
+msgstr "L'utilisateur n'existe pas."
 
 #: password_container.py:174
-msgid "Données réinitialisées."
-msgstr ""
+msgid "Data reset."
+msgstr "Données réinitialisées."
 
 #: password_container.py:186
 msgid "The page will reload"
-msgstr ""
+msgstr "The page will reload"
 
 #: password_container.py:193
-msgid "Mot de passe invalide"
-msgstr ""
+msgid "Invalid password"
+msgstr "Mot de passe invalide"
 
 #: password_container.py:197
 msgid "Too many tries"
-msgstr ""
+msgstr "Too many tries"
 
 #: password_container.py:220
-msgid "{days} jours "
-msgstr ""
+msgid "{days} days "
+msgstr "{days} jours "
 
 #: password_container.py:221
-msgid "{hours:02} heures {minutes:02} minutes"
-msgstr ""
+msgid "{hours:02} hours {minutes:02} minutes"
+msgstr "{hours:02} heures {minutes:02} minutes"
 
 #: password_container.py:224
-msgid " {seconds:02} secondes"
-msgstr ""
+msgid " {seconds:02} seconds"
+msgstr " {seconds:02} secondes"
 
 #: password_container.py:357
-msgid "Cette activité n'est pas disponible"
-msgstr ""
+msgid "This activity is not available"
+msgstr "Cette activité n'est pas disponible"
 
 #: static/html/1-not-yet-available.html:7
-msgid "Ce contenu n'est pas encore disponible."
-msgstr ""
+msgid "This content is not yet available."
+msgstr "Ce contenu n'est pas encore disponible."
 
 #: static/html/1-not-yet-available.html:8
-msgid "Date de disponibilité:"
-msgstr ""
+msgid "Date/Time available:"
+msgstr "Date de disponibilité:"
 
 #: static/html/2-enter-password.html:8
-msgid "Ce bloc est maintenant disponible jusqu'au:"
-msgstr ""
+msgid "This block is now available until:"
+msgstr "Ce bloc est maintenant disponible jusqu'au:"
 
 #: static/html/2-enter-password.html:10
-msgid "Saisissez ci-dessous le mot de passe:"
-msgstr ""
+msgid "Enter the password below:"
+msgstr "Saisissez ci-dessous le mot de passe:"
 
 #: static/html/2-enter-password.html:12
 #, python-format
 msgid ""
-"Vous avez essayé <span class=\"password-nb-tries\">%(nb_tries)s</span> fois."
+"You attempted <span class=\"password-nb-tries\">%(nb_tries)s</span> times."
 msgstr ""
+"Vous avez essayé <span class=\"password-nb-tries\">%(nb_tries)s</span> fois."
 
 #: static/html/2-enter-password.html:14
-msgid ""
-"Il vous reste <span id=\"time-left\"></span> pour saisir votre mot de passe."
+msgid "You have <span id=\"time-left\"></span> minutes to enter your password."
 msgstr ""
+"Il vous reste <span id=\"time-left\"></span> pour saisir votre mot de passe."
 
 #: static/html/2-enter-password.html:19
-msgid "Mot de passe:"
-msgstr ""
+msgid "Password:"
+msgstr "Mot de passe:"
 
 #: static/html/2-enter-password.html:25
-msgid "S'identifier"
-msgstr ""
+msgid "Enter"
+msgstr "S'identifier"
 
 #: static/html/3-available.html:6
-msgid "Ce contenu est disponible jusqu'au"
-msgstr ""
+msgid "The content is available from"
+msgstr "Ce contenu est disponible jusqu'au"
 
 #: static/html/3-available.html:8
-msgid "Il vous reste <span id=\"time-left\">---</span> pour valider ce quizz."
-msgstr ""
+msgid ""
+"You still have <span id=\"time-left\">---</span> to finish this activity."
+msgstr "Il vous reste <span id=\"time-left\">---</span> pour valider ce quizz."
 
 #: static/html/3-available.html:12 static/html/4-not-available-anymore.html:9
 #: static/html/5-time-elapsed.html:10
-msgid "Réinitialiser l'état"
-msgstr ""
+msgid "Reset status"
+msgstr "Réinitialiser l'état"
 
 #: static/html/4-not-available-anymore.html:6
 #: static/html/5-time-elapsed.html:6
-msgid "Ce contenu n'est plus disponible."
-msgstr ""
+msgid "This content is no longer available."
+msgstr "Ce contenu n'est plus disponible."
 
 #: static/html/5-time-elapsed.html:7
-msgid "Le temps imparti est écoulé."
-msgstr ""
+msgid "The time is up."
+msgstr "Le temps imparti est écoulé."
 
 #: static/html/staff-view.html:4
-msgid "Gestion apprenants"
-msgstr ""
+msgid "Student management"
+msgstr "Gestion apprenants"
 
 #: static/html/staff-view.html:7
-msgid "Réinitialiser l'état de l'utilisateur:"
-msgstr ""
+msgid ""
+"Reset the status of the student to allow the student to retake the "
+"assessment:"
+msgstr "Réinitialiser l'état de l'utilisateur:"
 
 #: static/html/staff-view.html:9
-msgid "Réinitialiser"
-msgstr ""
+msgid "Reset"
+msgstr "Réinitialiser"
 
 #: static/html/staff-view.html:15
-msgid "Examen"
-msgstr ""
+msgid "Examination"
+msgstr "Examen"
 
 #: static/html/studio.html:7
 #, python-format
 msgid ""
+"This activity belongs to Group ID:<strong>\"%(group_id)s\"</strong>, its "
+"content will be accessible by students from "
+msgstr ""
 "Cette activité appartient au groupe <strong>\"%(group_id)s\"</strong>, son "
 "contenu ne sera accessible par les étudiants que du "
-msgstr ""
 
 #: static/html/studio.html:7
-msgid "au"
-msgstr ""
+msgid "through"
+msgstr "au"
 
 #: static/html/studio.html:9
 #, python-format
 msgid ""
-"Ce block ne sera visible qu'avec le mot de passe: <strong>\"%(password)s\"</"
-"strong>pendant une durée de <strong>%(duration)s mn.</strong>"
+"This block will be visible with the password: <strong>\"%(password)s\"</"
+"strong> for a period of <strong>%(duration)s minutes.</strong>"
 msgstr ""
+"Ce block ne sera visible qu'avec le mot de passe: <strong>\"%(password)s\"</"
+"strong> pendant une durée de <strong>%(duration)s mn.</strong>"
 
 #: static/html/studio.html:11
-msgid "Vous pouvez ajouter du contenu en cliquant sur 'Voir'"
-msgstr ""
+msgid "Click 'View' to add content"
+msgstr "Vous pouvez ajouter du contenu en cliquant sur 'Voir'"
 
 #: static/html/studio.html:14
-msgid "Cette activité n'est pas configurées, cliquez sur 'Editer'."
-msgstr ""
+msgid "Click 'Edit' to configure this activity."
+msgstr "Cette activité n'est pas configurées, cliquez sur 'Editer'."
 
 #: static/html/studio_edit.html:14
-msgid "Enregistrer"
-msgstr ""
+msgid "Save"
+msgstr "Enregistrer"
 
 #: static/html/studio_edit.html:18
-msgid "Annuler"
-msgstr ""
+msgid "Cancel"
+msgstr "Annuler"

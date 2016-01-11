@@ -4,14 +4,14 @@
 <div class="password-container">
     <p class="information">
     {% if group_id %}
-        {% blocktrans %}Cette activité appartient au groupe <strong>"{{ group_id }}"</strong>, son contenu ne sera accessible par les étudiants que du {% endblocktrans %}<strong>{% localtime off %}{{ start_date }} UTC</strong> {% trans "au" %} <strong>{{ end_date }} UTC{% endlocaltime %}</strong>
+        {% blocktrans %}This activity belongs to Group ID:<strong>"{{ group_id }}"</strong>, its content will be accessible by students from {% endblocktrans %}<strong>{% localtime off %}{{ start_date }} UTC</strong> {% trans "through" %} <strong>{{ end_date }} UTC{% endlocaltime %}</strong>
         <br>
-        {% blocktrans %}Ce block ne sera visible qu'avec le mot de passe: <strong>"{{ password }}"</strong>pendant une durée de <strong>{{ duration }} mn.</strong>{% endblocktrans %}
+        {% blocktrans %}This block will be visible with the password: <strong>"{{ password }}"</strong> for a period of <strong>{{ duration }} minutes.</strong>{% endblocktrans %}
         <br>
-        {% trans "Vous pouvez ajouter du contenu en cliquant sur 'Voir'" %}
+        {% trans "Click 'View' to add content" %}
         <br>
     {% else %}
-        {% trans "Cette activité n'est pas configurées, cliquez sur 'Editer'." %}
+        {% trans "Click 'Edit' to configure this activity." %}
     {% endif %}
     </span></p>
 </div>

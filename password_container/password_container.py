@@ -45,8 +45,8 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
         scope=Scope.settings
     )
     group_id = String(default="", scope=Scope.settings,
-            display_name=ugettext_lazy('Identifiant de groupe'),
-            help=ugettext_lazy(u"Tous les Xblock ayant cet identifiant en commun seront débloqués en même temps."))
+            display_name=ugettext_lazy('Group ID'),
+            help=ugettext_lazy(u"All Xblock having the same group ID will be released simultaneously."))
 
     nb_tries = Dict(
             scope=Scope.preferences,
@@ -149,7 +149,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
         try:
             user = User.objects.get(username=request.GET['username'])
         except User.DoesNotExist:
-            return Response(_(u"L'utilisateur n'existe pas."))
+            return Response(_(u"The student does not exist."))
 
         preferences = XModuleStudentPrefsField.objects.filter(module_type=BlockTypeKeyV1('xblock.v1', 'password_container'),
                                                               student=user)
@@ -171,7 +171,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
             pass
         else:
             preference.delete()
-        return Response(_(u"Données réinitialisées."))
+        return Response(_(u"Data reset."))
 
     @XBlock.json_handler
     def check_password(self, data, prefix=''):
@@ -190,7 +190,7 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
             result = {
                 'result': False,
                 'nb_tries': self.get_nb_tries(),
-                'message': _(u"Mot de passe invalide")
+                'message': _(u"Invalid password")
                 }
             if (self.get_nb_tries() > MAX_TRIES):
                 result['too_much_tries'] = True
@@ -217,11 +217,11 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
         hours = time_left.seconds // 3600
         total = days * 3600 * 24 + time_left.seconds
 
-        string = _(u"{days} jours ") if days else u""
-        string += _(u"{hours:02} heures {minutes:02} minutes")
+        string = _(u"{days} days ") if days else u""
+        string += _(u"{hours:02} hours {minutes:02} minutes")
 
         if total < TIME_LEFT_WARNING:
-            string += _(u" {seconds:02} secondes")
+            string += _(u" {seconds:02} seconds")
             warning = True
 
         return {
@@ -354,6 +354,6 @@ class PasswordContainerXBlock(StudioContainerXBlockMixin, XBlock):
                 return fragment
 
             # we should not be here !
-            frag = Fragment(_(u"Cette activité n'est pas disponible"))
+            frag = Fragment(_(u"This activity is not available"))
             return frag
 
