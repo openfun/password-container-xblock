@@ -80,7 +80,7 @@ jobs:
 
             # Check that the tag refer to a commit in the $TARGET_BRANCH (e.g.
             # the master branch)
-            git branch -a --contains ${tag_commit} | grep ${TARGET_BRANCH}
+            git branch -a --contains ${tag_commit} | grep remotes/origin/${TARGET_BRANCH}
 
             # Check that the current tag (vX.Y.Z) matches the release number in
             # setup.cfg (X.Y.Z)
