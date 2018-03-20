@@ -1,0 +1,2 @@
+recursive-include password_container/locale/*/LC_MESSAGES/* *.po
+recursive-include password_container/static/* *.css *.html *.js
