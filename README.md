@@ -15,7 +15,7 @@ same group which will unlock all at the same time.
 Install this package with `pip` using FUN package index _via_:
 
 ```bash
-$ pip install --extra-index-url https://pypi.fury.io/fun-mooc password_container-xblock
+$ pip install --extra-index-url https://pypi.fury.io/openfun password_container-xblock
 ```
 
 Alternatively, if you intend to work on this project, clone this repository
